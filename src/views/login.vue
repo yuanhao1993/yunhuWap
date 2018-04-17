@@ -12,16 +12,16 @@
                 </p>
                 <div class="form-con">
                     <Form ref="loginForm" :model="form" :rules="rules">
-                        <FormItem prop="userName">
-                            <Input v-model="form.userName" placeholder="请输入用户名">
-                                <span slot="prepend">
+                        <FormItem prop="username">
+                            <Input v-model="form.username" placeholder="请输入用户名">
+                            <span slot="prepend">
                                     <Icon :size="16" type="person"></Icon>
                                 </span>
                             </Input>
                         </FormItem>
                         <FormItem prop="password">
                             <Input type="password" v-model="form.password" placeholder="请输入密码">
-                                <span slot="prepend">
+                            <span slot="prepend">
                                     <Icon :size="14" type="locked"></Icon>
                                 </span>
                             </Input>
@@ -38,44 +38,47 @@
 </template>
 
 <script>
-import Cookies from 'js-cookie';
-export default {
+  import Cookies from 'js-cookie'
+  import { loginByUsername } from '@/api/login'
+
+  export default {
     data () {
-        return {
-            form: {
-                userName: 'iview_admin',
-                password: ''
-            },
-            rules: {
-                userName: [
-                    { required: true, message: '账号不能为空', trigger: 'blur' }
-                ],
-                password: [
-                    { required: true, message: '密码不能为空', trigger: 'blur' }
-                ]
-            }
-        };
+      return {
+        form: {
+          username: 'yunhu1',
+          password: 'ys12345678'
+        },
+        rules: {
+          username: [
+            {required: true, message: '账号不能为空', trigger: 'blur'}
+          ],
+          password: [
+            {required: true, message: '密码不能为空', trigger: 'blur'}
+          ]
+        }
+      }
     },
     methods: {
-        handleSubmit () {
-            this.$refs.loginForm.validate((valid) => {
-                if (valid) {
-                    Cookies.set('user', this.form.userName);
-                    Cookies.set('password', this.form.password);
-                    this.$store.commit('setAvator', 'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg');
-                    if (this.form.userName === 'iview_admin') {
-                        Cookies.set('access', 0);
-                    } else {
-                        Cookies.set('access', 1);
-                    }
-                    this.$router.push({
-                        name: 'home_index'
-                    });
-                }
-            });
-        }
+      handleSubmit () {
+
+        this.$refs.loginForm.validate((valid) => {
+          if (valid) {
+            loginByUsername(this.form).then(response => {
+              console.log('token', response.data.token)
+              Cookies.set('TokenKey', response.data.token)
+              Cookies.set('access', 0)
+              this.$store.commit(
+                'setAvator',
+                'https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=3448484253,3685836170&fm=27&gp=0.jpg')
+              this.$router.push({
+                name: 'home_index'
+              })
+            })
+          }
+        })
+      }
     }
-};
+  }
 </script>
 
 <style>

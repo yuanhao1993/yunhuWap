@@ -76,7 +76,7 @@ export default {
     },
     methods: {
         init () {
-            this.data1 = this.initTable1 = table.searchTable1;
+           this.data1 = this.initTable1 = table.searchTable1;
             this.data2 = this.initTable2 = table.searchTable2;
             this.data3 = this.initTable3 = table.searchTable3;
         },
@@ -85,7 +85,9 @@ export default {
             let dataClone = data;
             for (let argu in argumentObj) {
                 if (argumentObj[argu].length > 0) {
+                    console.log("000",argu)
                     res = dataClone.filter(d => {
+                        console.log("d[argu]",d[argu])
                         return d[argu].indexOf(argumentObj[argu]) > -1;
                     });
                     dataClone = res;

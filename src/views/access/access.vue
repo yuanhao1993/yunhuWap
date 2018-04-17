@@ -1,77 +1,236 @@
 <style lang="less">
     @import '../../styles/common.less';
     @import './access.less';
+
+    @import '../../styles/table.less';
 </style>
 
 <template>
-    <div class="access">
-        <Row>
-            <Col span="8">
-                <Card>
-                    <p slot="title">
-                        <Icon type="android-contact"></Icon>
-                        当前用户
-                    </p>
-                    <div class="access-user-con access-current-user-con">
-                        <img :src="avatorPath" alt="">
-                        <p>当前用户权限值:<b>{{ accessCode }}</b></p>
-                    </div>
-                </Card>
-            </Col>
-            <Col span="16" class="padding-left-10">
-                <Card>
-                    <p slot="title">
-                        <Icon type="android-contacts"></Icon>
-                        不同权限用户的不同菜单
-                    </p>
-                    <div class="access-user-con access-change-access-con">
-                        <Col span="8">
-                            <Row type="flex" justify="center" align="middle" class="access-change-access-con-row">
-                                <i-switch :value="switchValue" @on-change="changeAccess" size="large"></i-switch>
-                            </Row>
-                        </Col>
-                        <Col span="16" class="padding-left-10">
-                            <Row type="flex" justify="center" align="middle" class="access-change-access-con-row">
-                                <p>您可以通过左侧的开关来切换当前用户的权限值，然后您可以观察左侧菜单栏的变化，如果当前用户的权限值是<b> 0 </b>，则左侧菜单栏会显示’权限测试页‘这一项('权限测试页'只用于测试，点击不会跳转)。</p>
-                            </Row>
-                        </Col>
-                    </div>
-                </Card>
+    <div>
+        <Row type="flex" justify="start">
+            <Col span="6" class="margin-top-20">
+            <Input v-model="searchConName1" icon="search" @on-change="handleSearch1" placeholder="请输入姓名搜索..."
+                   style="width: 200px"/>
             </Col>
         </Row>
+        <Row type="flex" justify="end">
+            <Col span="3" class="margin-bottom-10">
+            <!--<router-link to="/index_new">-->
+                <!--<i-button @click="newUser">新增</i-button>-->
+            <!--</router-link>-->
+            <i-button @click="newUser">新增</i-button>
+            </Col>
+        </Row>
+        <Table border :columns="columns1" :data="data1"></Table>
+        <Modal
+                v-model="newUserFlag"
+                title="客户基本信息"
+                @on-ok="confirmUser"
+                @on-cancel="cancelUser">
+            <div>
+                <i-form v-ref:form-validate :model="formValidate" :rules="ruleValidate" :label-width="80">
+                    <Form-item label="渠道名称" prop="name">
+                        <i-input :value.sync="formValidate.name" placeholder="请输入渠道名称"></i-input>
+                    </Form-item>
+                    <Form-item label="认证方式" prop="submit">
+                        <Checkbox-group :model.sync="formValidate.submit">
+                            <Checkbox value="吃饭"></Checkbox>
+                        </Checkbox-group>
+                    </Form-item>
+                </i-form>
+            </div>
+        </Modal>
+        <Modal
+                v-model="editUserFlag"
+                title="修改客户基本信息"
+                @on-ok="confirmEdit"
+                @on-cancel="cancelEdit">
+            <div>
+                <i-form v-ref:form-validate :model="formValidate" :rules="ruleValidate" :label-width="80">
+                    <Form-item label="渠道名称" prop="name">
+                        <i-input :value.sync="formValidate.name" placeholder="请输入渠道名称"></i-input>
+                    </Form-item>
+                    <Form-item label="认证方式" prop="submit">
+                        <Checkbox-group :model.sync="formValidate.submit">
+                            <Checkbox value="吃饭"></Checkbox>
+                        </Checkbox-group>
+                    </Form-item>
+                </i-form>
+            </div>
+        </Modal>
     </div>
 </template>
-
+<!--id/name/link h5/submit认证方式/create_time/edit-->
 <script>
-import Cookies from 'js-cookie';
-export default {
-    name: 'access_index',
-    data () {
-        return {
-            accessCode: parseInt(Cookies.get('access')),
-            switchValue: parseInt(Cookies.get('access')) === 1
-        };
-    },
-    computed: {
-        avatorPath () {
-            return localStorage.avatorImgPath;
-        }
-    },
-    methods: {
-        changeAccess (res) {
-            if (res) {
-                this.accessCode = 1;
-                Cookies.set('access', 1);
-            } else {
-                this.accessCode = 0;
-                Cookies.set('access', 0);
+    import {fetchList,submitList} from '@/api/channel'
+
+
+    export default {
+        data() {
+            return {
+                searchConName1: '',
+                newUserFlag: false,
+                editUserFlag:false,
+                columns1: [
+                    {
+                        title: 'ID',
+                        key: 'id'
+                    },
+                    {
+                        title: '渠道名称',
+                        key: 'name',
+                        render: (h, params) => {
+                            return h('div', [
+                                h('strong', params.row.name)
+                            ]);
+                        }
+                    },
+                    {
+                        title: 'Link h5',
+                        key: 'link_h5'
+                    },
+                    {
+                        title: '认证方式',
+                        width: 150,
+                        key: 'check_ways_get',
+                        render: (h, params) => {
+                            return h('div', [
+                                h('Tag', {
+                                    props: {
+                                        type: 'border',
+                                    },
+                                    style: {
+                                        marginRight: '2px'
+                                    },
+                                },params.row.check_ways_get),
+                                h('Tag', params.row.name)
+                            ]);
+                        }
+                    },
+                    {
+                        title: '创建时间',
+                        key: 'create_time'
+                    },
+                    {
+                        title: '操作',
+                        key: 'action',
+                        width: 150,
+                        align: 'center',
+                        render: (h, params) => {
+                            return h('div', [
+                                h('Button', {
+                                    props: {
+                                        type: 'primary',
+                                        size: 'midddle'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.show(params.row.id);
+                                        }
+                                    }
+                                }, '编辑'),
+//                                h('Button', {
+//                                    props: {
+//                                        type: 'error',
+//                                        size: 'small',
+//                                    },
+//                                    on: {
+//                                        click: () => {
+//                                            this.remove(params.index)
+//                                        }
+//                                    }
+//                                }, 'Delete')
+                            ]);
+                        }
+                    }
+                ],
+                data1: [],
+                //modal-new
+                formValidate: {
+                    name: '',
+                    submit:''
+                },
+                ruleValidate: {
+                    name: [
+                        {required: true, message: '姓名不能为空', trigger: 'blur'}
+                    ],
+                    submit: [
+                        {required: true, type: 'array', min: 1, message: '至少选择一种认证方式', trigger: 'change'},
+                        {type: 'array', max: 2, message: '最多选择两种认证方式', trigger: 'change'}
+                    ],
+                }
             }
-            this.$store.commit('updateMenulist');
+        },
+        created() {
+            this.getChannelmodel()
+            this.getChannelSubmit()
+        },
+        methods: {
+            getChannelSubmit(){
+                submitList().then(response => {
+                    this.formValidate.Submit = response.data.results;
+                    console.log("this.submit", this.response)
+                })
+            },
+            getChannelmodel() {
+                fetchList().then(response => {
+                    this.data1 = response.data.results;
+                })
+            },
+            newUser() {
+                //新增页面
+                this.newUserFlag=true;
+            },
+            search(data, argumentObj) {
+                // console.log("00", data, argumentObj)
+                let res = data;
+                let dataClone = data;
+                for (let argu in argumentObj) {
+                    console.log("argu", argu)
+                    if (argumentObj[argu].length > 0) {
+                        res = dataClone.filter(d => {
+                            return d[argu].indexOf(argumentObj[argu]) > -1;
+                        });
+                        dataClone = res;
+                    }
+                }
+                return res;
+            },
+            handleSearch1() {
+                this.data1 = this.search(this.data1, {name: this.searchConName1});
+            },
+            show(id) {
+                this.editUserFlag=true;
+                console.log("修改的当前客户的ID", id);
+            },
+            remove(index) {
+                // this.data6.splice(index, 1);
+            },
+            //模态框
+            confirmUser() {
+                this.newUserFlag=false;
+            },
+            cancelUser() {
+                this.newUserFlag=false;
+            },
+            //modal -edit
+            confirmEdit(){
+                this.editUserFlag=false;
+            },
+            cancelEdit(){
+                this.editUserFlag=false;
+            }
+
         }
     }
-};
 </script>
 
-<style>
 
+<style>
+    .ivu-modal{
+        top:30%;
+    }
 </style>

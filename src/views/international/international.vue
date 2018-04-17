@@ -3,132 +3,131 @@
 </style>
 
 <template>
-    <div>
-        <Row :gutter="10">
-            <Col span="4">
-                <Card>
-                    <p slot="title">
-                        <Icon type="ios-toggle"></Icon>
-                        {{ $t('switchLangTitle') }}
-                    </p>
-                    <Row type="flex" justify="center" align="middle" class="switch-language-row1">
-                        <RadioGroup :value="lang" @on-change="handleSwitch" vertical>
-                            <Radio label="zh-CN">
-                                <span>中文简体</span>
-                            </Radio>
-                            <Radio label="zh-TW">
-                                <span>中文繁體</span>
-                            </Radio>
-                            <Radio label="en-US">
-                                <span>English</span>
-                            </Radio>
-                        </RadioGroup>
-                        <p class="switch-language-tip">{{ $t('tip') }}</p>
-                    </Row>
-                </Card>
-            </Col>
-            <Col span="20">
-                <Card>
-                    <p slot="title">
-                        <Icon type="ios-cog"></Icon>
-                        {{ $t('iviewComponentTitle') }}
-                    </p>
-                    <Row :gutter="10" type="flex" justify="center" align="middle" class="switch-language-row1">
-                        <Col span="4" offset="1">
-                            <p>{{ $t('intro') }}</p>
-                        </Col>
-                        <Col span="6" offset="1">
-                            <Input :placeholder="placeholderText" style="width: 100%;"></Input>
-                            <div style="margin-top: 25px;">
-                                <DatePicker type="date" :placeholder="placeholderDate" style="width: 100%;"></DatePicker>
-                            </div>
-                            <div style="margin-top: 25px;">
-                                <Rate show-text v-model="valueText"></Rate>
-                            </div>
-                        </Col>
-                        <Col span="6">
-                            <Table :columns="columnsI18n" :data="dataI18n"></Table>
-                        </Col>
-                        <Col span="6">
-                            <Button type="primary" @click="showModal = true" long>{{ $t('btnText') }}</Button>
-                            <Modal v-model="showModal" title="iView">
-                                <p>{{ $t('modalText') }}</p>
-                            </Modal>
-                            <div style="margin-top: 25px;">
-                                <Poptip confirm :title="$t('poptip')">
-                                    <Button type="primary" long>{{ $t('showPoptipText') }}</Button>
-                                </Poptip>
-                            </div>
-                        </Col>
-                    </Row>
-                </Card>
-            </Col>
-        </Row>
-    </div>
+    <!--<Row>-->
+    <!--&lt;!&ndash;<Col span="24" type="flex" justify="start">&ndash;&gt;-->
+    <!--&lt;!&ndash;<Input v-model="value4" icon="ios-clock-outline" placeholder="Enter something..." style="width: 200px"></Input>&ndash;&gt;-->
+    <!--&lt;!&ndash;</Col>&ndash;&gt;-->
+    <!--<Col span="24" type="flex" justify="end">-->
+    <!--<Button type="primary">新增</Button>-->
+    <!--</Col>-->
+    <!--</Row>-->
+    <Table border :columns="columns7" :data="data6"></Table>
 </template>
-
+<!--id/name/link h5/submit认证方式/create_time/edit-->
 <script>
-export default {
-    name: 'international_index',
-    data () {
-        return {
-            lang: 'zh-CN',
-            valueText: 3,
-            showModal: false,
-            columnsI18n: [
-                {
-                    key: 'name',
-                    title: this.$t('name')
-                },
-                {
-                    key: 'company',
-                    title: this.$t('company')
-                }
-            ],
-            dataI18n: [
-                {
-                    name: 'Aresn',
-                    company: 'TalkingData'
-                },
-                {
-                    name: 'Lison',
-                    company: 'TalkingData'
-                },
-                {
-                    name: 'Lucy',
-                    company: 'TalkingData'
-                }
-            ]
-        };
-    },
-    methods: {
-        handleSwitch (lang) {
-            this.lang = lang;
-            localStorage.lang = lang;
-            this.$store.commit('switchLang', lang); // 如果你要自己实现多语言切换，那么只需要执行这行代码即可，修改语言类型
-
-            this.columnsI18n = [
-                {
-                    key: 'name',
-                    title: this.$t('name')
-                },
-                {
-                    key: 'company',
-                    title: this.$t('company')
-                }
-            ]; // 像iview的table组件这样一次渲染如果数据不更新视图就不更新的组件，如果切换语言需要更新一下数据才能切换组件内的多语言
-        }
-    },
-    computed: {
-        placeholderText () {
-            return this.$t('placeholderText');
+    export default {
+        data() {
+            return {
+                // value4: '输入查询内容',
+                columns7: [
+                    {
+                        title: 'ID',
+                        key: 'id'
+                    },
+                    {
+                        title: 'Name',
+                        key: 'name',
+                        render: (h, params) => {
+                            return h('div', [
+                                h('Icon', {
+                                    props: {
+                                        type: 'person'
+                                    }
+                                }),
+                                h('strong', params.row.name)
+                            ]);
+                        }
+                    },
+                    {
+                        title: 'Link h5',
+                        key: 'link_h5'
+                    },
+                    {
+                        title: 'Submit',
+                        key: 'submit'
+                    },
+                    {
+                        title: 'Create_time',
+                        key: 'create_time'
+                    },
+                    {
+                        title: 'Action',
+                        key: 'action',
+                        width: 150,
+                        align: 'center',
+                        render: (h, params) => {
+                            return h('div', [
+                                h('Button', {
+                                    props: {
+                                        type: 'primary',
+                                        size: 'small'
+                                    },
+                                    style: {
+                                        marginRight: '5px'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.show(params.index)
+                                        }
+                                    }
+                                }, 'View'),
+                                h('Button', {
+                                    props: {
+                                        type: 'error',
+                                        size: 'small'
+                                    },
+                                    on: {
+                                        click: () => {
+                                            this.remove(params.index)
+                                        }
+                                    }
+                                }, 'Delete')
+                            ]);
+                        }
+                    }
+                ],
+                data6: [
+                    {
+                        id: '1',
+                        name: '百度推广',
+                        link_h5: 'http://baidu.com',
+                        submit: '人行征信',
+                        create_time:'2017 年12月9日',
+                    },
+                    {
+                        id: '1',
+                        name: '今日头条',
+                        link_h5: 'http://baidu.com',
+                        submit: '人行征信',
+                        create_time:'2017 年12月9日',
+                    },
+                    {
+                        id: '1',
+                        name: '360推广',
+                        link_h5: 'http://baidu.com',
+                        submit: '人行征信',
+                        create_time:'2017 年12月9日',
+                    },
+                    {
+                        id: '1',
+                        name: '搜狐',
+                        link_h5: 'http://baidu.com',
+                        submit: '人行征信',
+                        create_time:'2017 年12月9日',
+                    }
+                ]
+            }
         },
-        placeholderDate () {
-            return this.$t('placeholderDate');
+        methods: {
+            show(index) {
+                this.$Modal.info({
+                    title: 'User Info',
+                    content: `Name：${this.data6[index].name}<br>Age：${this.data6[index].age}<br>Address：${this.data6[index].address}`
+                })
+            },
+            remove(index) {
+                this.data6.splice(index, 1);
+            }
         }
-    },
-    created () {
-        this.lang = localStorage.lang || 'zh-CN';
     }
-};
 </script>
