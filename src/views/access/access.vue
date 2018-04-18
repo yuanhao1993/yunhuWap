@@ -21,22 +21,21 @@
             </Col>
         </Row>
         <Table border :columns="columns1" :data="data1"></Table>
+        <Page :total="count" :current="1" @on-change="changePage"></Page>
         <Modal
                 v-model="newUserFlag"
                 title="客户基本信息"
                 @on-ok="confirmUser"
                 @on-cancel="cancelUser">
             <div>
-                <i-form v-ref:form-validate :model="formValidate" :rules="ruleValidate" :label-width="80">
+                <i-form :model="newform" :rules="ruleValidate" :label-width="80">
                     <Form-item label="渠道名称" prop="name">
-                        <i-input :value.sync="formValidate.name" placeholder="请输入渠道名称"></i-input>
+                        <i-input v-model="newform.name" placeholder="请输入渠道名称"></i-input>
                     </Form-item>
-                    <Form-item label="认证方式" prop="submit">
-                        <CheckboxGroup v-model.sync="formValidate.submit" v-for="item in checkways">
-                            <Checkbox label="item.name">
-                                <span>{{item.name}}</span>
-                            </Checkbox>
-                        </CheckboxGroup>
+                    <Form-item label="认证方式">
+                        <i-select v-model="newform.check_ways" multiple placeholder="请选择(支持多选)">
+                            <i-option v-for="item in checkways" :value="item.id">{{ item.name}}</i-option>
+                        </i-select>
                     </Form-item>
                 </i-form>
             </div>
@@ -47,23 +46,23 @@
                 @on-ok="confirmEdit"
                 @on-cancel="cancelEdit">
             <div>
-                <i-form v-ref:form-validate :model="formValidate" :rules="ruleValidate" :label-width="80">
+                <i-form :model="editform" :rules="ruleValidate" :label-width="80">
                     <Form-item label="渠道名称" prop="name">
-                        <i-input :value.sync="formValidate.name" placeholder="请输入渠道名称"></i-input>
+                        <i-input v-model="editform.name" placeholder="请输入渠道名称"></i-input>
                     </Form-item>
-                    <Form-item label="认证方式" prop="submit">
-                        <Checkbox-group :model.sync="formValidate.submit">
-                            <Checkbox value="吃饭"></Checkbox>
-                        </Checkbox-group>
+                    <Form-item label="认证方式">
+                        <i-select v-model="editform.check_ways" multiple placeholder="请选择(支持多选)">
+                            <i-option v-for="item in checkways" :value="item.id">{{ item.name}}</i-option>
+                        </i-select>
                     </Form-item>
                 </i-form>
             </div>
         </Modal>
     </div>
 </template>
-<!--id/name/link h5/submit认证方式/create_time/edit-->
+
 <script>
-  import { fetchList, checkWays } from '@/api/channel'
+  import { fetchList, checkWays, newChannel, editChannel } from '@/api/channel'
 
   export default {
     data () {
@@ -96,9 +95,7 @@
             render: (h, params) => {
               return h('div', [
                 h('Tag', {
-                  props: {
-                    type: 'border',
-                  },
+                  props: [11, 22, 33],
                   style: {
                     marginRight: '2px'
                   },
@@ -121,7 +118,7 @@
                 h('Button', {
                   props: {
                     type: 'primary',
-                    size: 'midddle'
+                    size: 'small'
                   },
                   style: {
                     marginRight: '5px'
@@ -129,6 +126,7 @@
                   on: {
                     click: () => {
                       this.show(params.row.id)
+                      console.log('this.操作', params)
                     }
                   }
                 }, '编辑'),
@@ -148,22 +146,23 @@
           }
         ],
         data1: [],
-        checkways:[],
+        count: null,
+        checkways: [],
         //modal-new
-        formValidate: {
+        newform: {
           name: '',
-          submit: ''
+          check_ways: []
         },
-        formValidate: {
+        editform: {
           name: '',
-          submit: ''
+          check_ways: []
         },
         ruleValidate: {
           name: [
-            {required: true, message: '姓名不能为空', trigger: 'blur'}
+            {required: false, message: '姓名不能为空', trigger: 'blur'}
           ],
           submit: [
-            {required: true, type: 'array', min: 1, message: '至少选择一种认证方式', trigger: 'change'},
+            {required: false, type: 'array', min: 1, message: '至少选择一种认证方式', trigger: 'change'},
             {type: 'array', max: 2, message: '最多选择两种认证方式', trigger: 'change'}
           ],
         }
@@ -176,18 +175,19 @@
     methods: {
       getChannelSubmit () {
         checkWays().then(response => {
-          this.checkways = response.data.results;
-          console.log("认证方式",response.data.results)
+          this.checkways = response.data.results
+          console.log('认证方式', response.data.results)
         })
       },
       getChannelmodel () {
         fetchList().then(response => {
           this.data1 = response.data.results
+          this.count = response.data.count
           console.log('this.data1', this.data1)
+          console.log('this.count', this.count)
         })
       },
       newUser () {
-        //新增页面
         this.newUserFlag = true
       },
       search (data, argumentObj) {
@@ -218,6 +218,10 @@
       //模态框
       confirmUser () {
         this.newUserFlag = false
+        newChannel(this.newform).then(response => {
+          console.log('新增的', response)
+          this.getChannelmodel()
+        })
       },
       cancelUser () {
         this.newUserFlag = false
@@ -225,11 +229,22 @@
       //modal -edit
       confirmEdit () {
         this.editUserFlag = false
+        newChannel(this.editform).then(response => {
+          console.log('修改的', response)
+        })
       },
       cancelEdit () {
         this.editUserFlag = false
+      },
+      changePage : function (page) {
+        console.log('当前显示', page)
+//        {'limit': 10, 'offset': '10'}
+        fetchList().then(function (res) {
+          console.log(this);
+          this.data1 = res.data.results
+          console.log('change', this.data1)
+        })
       }
-
     }
   }
 </script>
