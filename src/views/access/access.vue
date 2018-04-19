@@ -20,8 +20,8 @@
             <i-button @click="newUser">新增</i-button>
             </Col>
         </Row>
-        <Table border :columns="columns1" :data="data1"></Table>
-        <Page :total="count" :current="1" @on-change="changePage"></Page>
+        <Table border :columns="columns1" :data="channel"></Table>
+        <Page :total="count" :current="1" @on-change="chang"></Page>
         <Modal
                 v-model="newUserFlag"
                 title="客户基本信息"
@@ -145,7 +145,7 @@
             }
           }
         ],
-        data1: [],
+        channel:[],
         count: null,
         checkways: [],
         //modal-new
@@ -171,7 +171,10 @@
     created () {
       this.getChannelmodel()
       this.getChannelSubmit()
+      const that = this;
+      console.log("a",channel)
     },
+    watch:{},
     methods: {
       getChannelSubmit () {
         checkWays().then(response => {
@@ -180,11 +183,11 @@
         })
       },
       getChannelmodel () {
+        this.channel=channel;
         fetchList().then(response => {
-          this.data1 = response.data.results
+          this.channel= response.data.results
           this.count = response.data.count
-          console.log('this.data1', this.data1)
-          console.log('this.count', this.count)
+          console.log('channel',channel)
         })
       },
       newUser () {
@@ -236,14 +239,14 @@
       cancelEdit () {
         this.editUserFlag = false
       },
-      changePage : function (page) {
+      chang : page => {
         console.log('当前显示', page)
-//        {'limit': 10, 'offset': '10'}
-        fetchList().then(function (res) {
-          console.log(this);
-          this.data1 = res.data.results
-          console.log('change', this.data1)
+        console.log(this)
+        fetchList({'limit': 10, 'offset': '10'}).then(function (res) {
+          this.channel = res.data.results
+          console.log('页数 channel',this.channel)
         })
+        console.log('00',channel)
       }
     }
   }

@@ -9,14 +9,12 @@ import 'iview/dist/styles/iview.css';
 import VueI18n from 'vue-i18n';
 import util from '@/libs/util';
 import axios from 'axios';
+import './global.js'
 
 Vue.use(VueI18n);
 Vue.use(iView);
 Vue.prototype.$ajax = axios;
-// axios.defaults.withCredentials= true;//请求带cookie
-// axios.defaults.baseURL = 'http://47.94.133.188:8000';
-// axios.defaults.headers.common['Authorization'] = token;
-// axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
+
 
 new Vue({
     el: '#app',
